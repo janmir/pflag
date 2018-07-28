@@ -109,9 +109,6 @@ import (
 	"strings"
 )
 
-// ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
-var ErrHelp = errors.New("pflag: help requested")
-
 // ErrorHandling defines how to handle flag parsing errors.
 type ErrorHandling int
 
@@ -140,6 +137,9 @@ type FlagSet struct {
 	// The field is a function (not a method) that may be changed to point to
 	// a custom error handler.
 	Usage func()
+
+	// ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
+	ErrHelp error
 
 	// SortFlags is used to indicate, if user wants to have sorted flags in
 	// help/usage messages.
@@ -950,7 +950,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 		switch {
 		case name == "help":
 			f.usage()
-			return a, ErrHelp
+			return a, f.ErrHelp
 		case f.ParseErrorsWhitelist.UnknownFlags:
 			// --unknown=unknownval arg ...
 			// we do not want to lose arg in this case
@@ -1004,7 +1004,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		switch {
 		case c == 'h':
 			f.usage()
-			err = ErrHelp
+			err = f.ErrHelp
 			return
 		case f.ParseErrorsWhitelist.UnknownFlags:
 			// '-f=arg arg ...'
@@ -1196,6 +1196,20 @@ func Parsed() bool {
 // CommandLine is the default set of command-line flags, parsed from os.Args.
 var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
 
+// CustomFlagSet returns a new, empty flag set with the specified name,
+// error handling property and SortFlags set to true.
+func CustomFlagSet(name string, sort bool, err error) *FlagSet {
+	f := &FlagSet{
+		name:          name,
+		errorHandling: ExitOnError,
+		argsLenAtDash: -1,
+		interspersed:  true,
+		SortFlags:     sort,
+		ErrHelp:       err,
+	}
+	return f
+}
+
 // NewFlagSet returns a new, empty flag set with the specified name,
 // error handling property and SortFlags set to true.
 func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
@@ -1205,6 +1219,7 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 		argsLenAtDash: -1,
 		interspersed:  true,
 		SortFlags:     true,
+		ErrHelp:       errors.New("pflag: help requested"),
 	}
 	return f
 }
