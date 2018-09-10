@@ -1219,7 +1219,7 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 		argsLenAtDash: -1,
 		interspersed:  true,
 		SortFlags:     true,
-		ErrHelp:       errors.New("pflag: help requested"),
+		ErrHelp:       errors.New(" "), //errors.New("pflag: help requested"),
 	}
 	return f
 }
