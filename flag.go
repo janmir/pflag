@@ -1197,7 +1197,18 @@ func Parsed() bool {
 var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
 
 // CustomFlagSet returns a new, empty flag set with the specified name,
-// error handling property and SortFlags set to true.
+// error handling property and SortFlags.
+// Usage:
+// var (
+// 	flag = pflag.CustomFlagSet("outlooky", false, errors.New(""))
+//
+// 	start = flag.BoolP("start", "s", false, "Start...")
+// )
+//
+// func init() {
+// 	flag.Parse(os.Args[1:])
+// }
+// janmir
 func CustomFlagSet(name string, sort bool, err error) *FlagSet {
 	f := &FlagSet{
 		name:          name,
